@@ -6,8 +6,12 @@ package io.flutter.plugins.webviewflutter;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Picture;
 import android.hardware.display.DisplayManager;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
@@ -23,9 +27,14 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.platform.PlatformView;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import android.util.Log;
 
 public class FlutterWebView implements PlatformView, MethodCallHandler {
   private static final String JS_CHANNEL_NAMES_FIELD = "javascriptChannelNames";
@@ -82,6 +91,10 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
       int id,
       Map<String, Object> params,
       View containerView) {
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+      WebView.enableSlowWholeDocumentDraw();
+    }
 
     DisplayListenerProxy displayListenerProxy = new DisplayListenerProxy();
     DisplayManager displayManager =
@@ -220,11 +233,15 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
         break;
       case "getScrollY":
         getScrollY(result);
+      case "capture":
+        capture(result);
         break;
       default:
         result.notImplemented();
     }
   }
+
+
 
   @SuppressWarnings("unchecked")
   private void loadUrl(MethodCall methodCall, Result result) {
@@ -407,8 +424,81 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
 
   @Override
   public void dispose() {
+    if(webView != null){
+      webView.clearCache(true);
+      webView.removeAllViews();
+    }
     methodChannel.setMethodCallHandler(null);
     webView.dispose();
     webView.destroy();
   }
+
+//  private void capture(Result result) {
+//    Log.i("'test'", "'!!!capture'");
+//    Picture picture = webView.capturePicture();
+//
+//    int width = picture.getWidth();
+//
+//    int height = picture.getHeight();
+//
+//    if (width > 0 && height > 0) {
+//
+//      Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//      Canvas canvas = new Canvas(bitmap);
+//
+//      picture.draw(canvas);
+//
+//
+//      File file = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".jpg");
+//
+////      try {
+//
+////        FileOutputStream fos = new FileOutputStream(file);
+////
+////        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+////
+////        fos.flush();
+////
+////        fos.close();
+//          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//          bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+//          byte[] datas = baos.toByteArray();
+//          result.success(datas);
+//
+//
+////      } catch (java.io.IOException e) {
+////
+////        e.printStackTrace();
+////
+////      }
+//    }
+
+    private void capture(Result result) {
+
+      float scale = webView.getScale();
+
+      int width = webView.getWidth();
+
+      int height = (int) (webView.getHeight() * scale);
+
+      Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+
+      Canvas canvas = new Canvas(bitmap);
+
+      webView.draw(canvas);
+      try {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] datas = baos.toByteArray();
+        baos.flush();
+        baos.close();
+        result.success(datas);
+      }catch (java.io.IOException e) {
+        e.printStackTrace();
+      }
+
+
+    }
+
 }

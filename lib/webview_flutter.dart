@@ -7,10 +7,12 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+import 'dart:typed_data';
 
 import 'platform_interface.dart';
 import 'src/webview_android.dart';
 import 'src/webview_cupertino.dart';
+
 
 /// Optional callback invoked when a web view is first created. [controller] is
 /// the [WebViewController] for the created web view.
@@ -703,6 +705,10 @@ class WebViewController {
   /// Scroll position is measured from top.
   Future<int> getScrollY() {
     return _webViewPlatformController.getScrollY();
+  }
+
+  Future<Uint8List> capture() {
+    return _webViewPlatformController.capture();
   }
 }
 

@@ -7,6 +7,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+import 'dart:typed_data';
 
 import 'webview_flutter.dart';
 
@@ -316,6 +317,10 @@ abstract class WebViewPlatformController {
   Future<int> getScrollY() {
     throw UnimplementedError(
         "WebView getScrollY is not implemented on the current platform");
+  }
+  Future<Uint8List> capture() {
+    throw UnimplementedError(
+        "WebView capture is not implemented on the current platform");
   }
 }
 

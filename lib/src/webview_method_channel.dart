@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -152,6 +153,11 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
 
   @override
   Future<int> getScrollY() => _channel.invokeMethod<int>("getScrollY");
+
+  @override
+  Future<Uint8List> capture() {
+    return _channel.invokeMethod('capture');
+  }
 
   /// Method channel implementation for [WebViewPlatform.clearCookies].
   static Future<bool> clearCookies() {
