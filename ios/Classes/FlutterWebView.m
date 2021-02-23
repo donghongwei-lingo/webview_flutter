@@ -5,6 +5,7 @@
 #import "FlutterWebView.h"
 #import "FLTWKNavigationDelegate.h"
 #import "JavaScriptChannelHandler.h"
+#import "CTMViewCapture.h"
 
 @implementation FLTWebViewFactory {
   NSObject<FlutterBinaryMessenger>* _messenger;
@@ -73,6 +74,7 @@
   if (self = [super init]) {
     _viewId = viewId;
 
+      
     NSString* channelName = [NSString stringWithFormat:@"plugins.flutter.io/webview_%lld", viewId];
     _channel = [FlutterMethodChannel methodChannelWithName:channelName binaryMessenger:messenger];
     _javaScriptChannelNames = [[NSMutableSet alloc] init];
@@ -158,6 +160,8 @@
     [self getScrollX:call result:result];
   } else if ([[call method] isEqualToString:@"getScrollY"]) {
     [self getScrollY:call result:result];
+  } else if ([[call method] isEqualToString:@"capture"]) {
+    [self capture:call result:result];
   } else {
     result(FlutterMethodNotImplemented);
   }
@@ -311,6 +315,15 @@
 - (void)getScrollY:(FlutterMethodCall*)call result:(FlutterResult)result {
   int offsetY = _webView.scrollView.contentOffset.y;
   result([NSNumber numberWithInt:offsetY]);
+}
+//
+- (void)capture:(FlutterMethodCall*)call result:(FlutterResult)result {
+
+    [_webView CTMContentCaptureCompletionHandler:^(UIImage * _Nonnull capturedImage) {
+        NSData *imageData = UIImagePNGRepresentation(capturedImage);
+        result(imageData);
+    }];
+
 }
 
 // Returns nil when successful, or an error message when one or more keys are unknown.
