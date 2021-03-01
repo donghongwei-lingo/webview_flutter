@@ -480,7 +480,7 @@ public class FlutterWebView implements PlatformView, MethodCallHandler {
 
       int width = webView.getWidth();
 
-      int height = (int) (webView.getHeight() * scale);
+      int height = webView.getHeight();
 
       Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
 
